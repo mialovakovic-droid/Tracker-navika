@@ -1,0 +1,195 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "navike.h"
+
+// Extern varijabla definirana ovdje (Točka 8)
+const char* program_verzija = "v2.0 - Napredna Verzija";
+
+// Static globalna varijabla - vidljiva samo u ovoj datoteci (Točka 6)
+static int ukupan_broj_operacija = 0;
+
+// CREATE: Kreiranje strukture (Točka 1)
+Navika kreirajNaviku(int novi_id) {
+	ukupan_broj_operacija++;
+	Navika nova;
+	nova.id = novi_id;
+
+	printf("\n--- Unos Podataka za Novu Naviku ---\n");
+	printf("Unesite naziv navike: ");
+	scanf(" %[^\n]", nova.naziv);
+
+	printf("Unesite tjedni cilj (broj dana): ");
+	scanf("%d", &nova.tjedni_cilj);
+
+	nova.odradeno = 0;
+	return nova;
+}
+
+
+// INSERT: Dinamička alokacija i umetanje (Točka 1, 16, 17)
+void umetniNaviku(Navika** navike, int* broj_navika, Navika nova) {
+	// Zaštita parametara (Točka 14)
+	if (navike == NULL || broj_navika == NULL) return;
+
+	// Realokacija memorije za jedan dodatni element (Točka 17)
+	Navika* privremeni = (Navika*)realloc(*navike, (*broj_navika + 1) * sizeof(Navika));
+	PROVJERA_ALOKACIJE(privremeni);
+
+	*navike = privremeni;
+	(*navike)[*broj_navika] = nova;
+	(*broj_navika)++;
+
+	spremiUDatoteku(*navike, *broj_navika); // Automatsko spremanje (Točka 19)
+	printf("Navika uspjesno umetnuta!\n");
+}
+
+
+// READ: Prikaz podataka (Točka 1, 12, 14)
+void prikaziNavike(const Navika* navike, int broj_navika) {
+	if (navike == NULL || broj_navika == 0) {
+		printf("\nNema unesenih navika.\n");
+		return;
+	}
+	printf("\n--- Popis Navika (%s) ---\n", program_verzija);
+	for (int i = 0; i < broj_navika; i++) {
+		printf("ID: %d | Naziv: %s | Cilj: %d dana | Odradeno: %d\n",
+			navike[i].id, navike[i].naziv, navike[i].tjedni_cilj, navike[i].odradeno);
+	}
+}
+
+// UPDATE: Ažuriranje podataka (Točka 1)
+void azurirajNaviku(Navika* navike, int broj_navika) {
+	if (navike == NULL || broj_navika == 0) return;
+
+	int trazeni_id, pronadeno = 0;
+	printf("\nUnesite ID navike za azuriranje: ");
+	scanf("%d", &trazeni_id);
+
+	for (int i = 0; i < broj_navika; i++) {
+		if (navike[i].id == trazeni_id) {
+			pronadeno = 1;
+			printf("Trenutno odradeno: %d. Unesite novo stanje: ", navike[i].odradeno);
+			scanf("%d", &navike[i].odradeno);
+			spremiUDatoteku(navike, broj_navika);
+			printf("Navika uspjesno azurirana!\n");
+			break;
+		}
+	}
+	if (!pronadeno) printf("Navika s tim ID-jem ne postoji.\n");
+}
+
+
+// DELETE: Brisanje i smanjivanje dinamičke memorije (Točka 1, 18)
+void obrisiNaviku(Navika** navike, int* broj_navika) {
+	if (navike == NULL || *navike == NULL || *broj_navika == 0) return;
+
+	int trazeni_id, indeks = -1;
+	printf("\nUnesite ID navike za brisanje: ");
+	scanf("%d", &trazeni_id);
+
+	for (int i = 0; i < *broj_navika; i++) {
+		if ((*navike)[i].id == trazeni_id) {
+			indeks = i;
+			break;
+		}
+	}
+
+	if (indeks != -1) {
+		for (int i = indeks; i < *broj_navika - 1; i++) {
+			(*navike)[i] = (*navike)[i + 1];
+		}
+		(*broj_navika)--;
+
+		if (*broj_navika > 0) {
+			Navika* privremeni = (Navika*)realloc(*navike, (*broj_navika) * sizeof(Navika));
+			PROVJERA_ALOKACIJE(privremeni);
+			*navike = privremeni;
+		}
+		else {
+			// Sigurno brisanje zadnjeg elementa (Točka 18)
+			free(*navike);
+			*navike = NULL;
+		}
+		spremiUDatoteku(*navike, *broj_navika);
+		printf("Navika uspjesno obrisana!\n");
+	}
+	else {
+		printf("Navika s tim ID-jem ne postoji.\n");
+	}
+}
+
+// Funkcija za usporedbu koja se prosljeđuje qsortu i bsearchu (Točka 26)
+int usporediPoId(const void* a, const void* b) {
+	return (((Navika*)a)->id - ((Navika*)b)->id);
+}
+
+
+// SORT: Korištenje ugrađene qsort funkcije (Točka 23)
+void sortirajNavike(Navika* navike, int broj_navika) {
+	if (navike == NULL || broj_navika < 2) return;
+	qsort(navike, broj_navika, sizeof(Navika), usporediPoId);
+	printf("Navike sortirane po ID-ju uzlazno!\n");
+}
+
+
+// SEARCH: Korištenje ugrađene bsearch funkcije (Točka 24)
+void pretraziNaviku(const Navika* navike, int broj_navika) {
+	if (navike == NULL || broj_navika == 0) return;
+
+	Navika kljuc;
+	printf("\nUnesite ID navike koju trazite: ");
+	scanf("%d", &kljuc.id);
+
+	// bsearch zahtijeva da polje bude sortirano prije pretraživanja
+	Navika* rezultat = (Navika*)bsearch(&kljuc, navike, broj_navika, sizeof(Navika), usporediPoId);
+
+	if (rezultat != NULL) {
+		printf("Pronadeno -> ID: %d | Naziv: %s | Progres: %d/%d\n",
+			rezultat->id, rezultat->naziv, rezultat->odradeno, rezultat->tjedni_cilj);
+	}
+	else {
+		printf("Navika s tim ID-jem nije pronadena (provjerite jeste li sortirali polje).\n");
+	}
+}
+
+
+// DATOTEKE: Pisanje u binarnu datoteku (Točka 1, 19)
+void spremiUDatoteku(const Navika* navike, int broj_navika) {
+	FILE* fp = fopen(DATOTEKA_NAZIV, "wb");
+	if (fp == NULL) {
+		perror("Greska pri otvaranju datoteke za pisanje"); // Točka 22
+		return;
+	}
+	// Prvo pišemo broj elemenata, pa cijeli niz odjednom
+	fwrite(&broj_navika, sizeof(int), 1, fp);
+	if (broj_navika > 0) {
+		fwrite(navike, sizeof(Navika), broj_navika, fp);
+	}
+	fclose(fp); // Zatvaranje datoteke (Točka 19)
+}
+
+
+// DATOTEKE: Čitanje iz binarne datoteke s alokacijom (Točka 19, 20)
+Navika* ucitajIzDatoteke(int* broj_navika) {
+	FILE* fp = fopen(DATOTEKA_NAZIV, "rb");
+	if (fp == NULL) {
+		*broj_navika = 0;
+		return NULL; // Ako datoteka ne postoji, vraća prazan pokazivač
+	}
+
+	fread(broj_navika, sizeof(int), 1, fp);
+	if (*broj_navika == 0) {
+		fclose(fp);
+		return NULL;
+	}
+
+	Navika* ucitane_navike = (Navika*)malloc((*broj_navika) * sizeof(Navika));
+	PROVJERA_ALOKACIJE(ucitane_navike);
+
+	fread(ucitane_navike, sizeof(Navika), *broj_navika, fp);
+	fclose(fp);
+	return ucitane_navike;
+}
+
