@@ -1,0 +1,55 @@
+#ifndef NAVIKE_H
+#define NAVIKE_H
+
+#define MAX_NAZIV 50
+#define DATOTEKA_NAZIV "navike.dat"
+
+// Makro funkcija za provjeru uspješnosti alokacije (Točka 9)
+#define PROVJERA_ALOKACIJE(ptr) \
+do { \
+	if ((ptr) == NULL) { \
+	perror("Greska kod alokacije memorije"); \
+	exit(1); \
+	} \
+} while(0)
+
+// Enum za stavke izbornika (Točka 11)
+typedef enum {
+	IZLAZ = 0,
+	DODAJ_NAVIKU,
+	PRIKAZI_NAVIKE,
+	AZURIRAJ_NAVIKU,
+	OBRISI_NAVIKU,
+	SORTIRAJ_NAVIKE,
+	PRETRAZI_NAVIKU
+} IzbornikOpcije;
+
+// Struktura podataka (Točka 3, 4)
+typedef struct {
+	int id;
+	char naziv[MAX_NAZIV];
+	int tjedni_cilj;
+	int odradeno;
+} Navika;
+
+// Globalna varijabla deklarirana kao extern (Točka 8)
+extern const char* program_verzija;
+
+// Prototipi funkcija s const zaštitom parametara (Točka 13, 14)
+Navika kreirajNaviku(int novi_id);
+void umetniNaviku(Navika** navike, int* broj_navika, Navika nova);
+void prikaziNavike(const Navika* navike, int broj_navika);
+void azurirajNaviku(Navika* navike, int broj_navika);
+void obrisiNaviku(Navika** navike, int* broj_navika);
+
+// Funkcije za sortiranje, pretraživanje i datoteke
+void sortirajNavike(Navika* navike, int broj_navika);
+void pretraziNaviku(const Navika* navike, int broj_navika);
+void spremiUDatoteku(const Navika* navike, int broj_navika);
+Navika* ucitajIzDatoteke(int* broj_navika);
+
+// Callback funkcije za qsort i bsearch (Točka 26)
+int usporediPoId(const void* a, const void* b);
+
+
+#endif
