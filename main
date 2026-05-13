@@ -1,0 +1,60 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "navike.h"
+
+int main(){
+	// Static lokalna varijabla (Točka 6)
+	static int brojac_pokretanja_sustava = 1;
+
+	int broj_trenutnih_navika = 0;
+	// Dinamički pokazivač umjesto statičkog niza (Točka 15, 16)
+	Navika* popis_navika = ucitajIzDatoteke(&broj_trenutnih_navika);
+
+	int unos;
+	IzbornikOpcije izbor; //Korištenje enum tipa (Točka 11)
+
+	do {
+		printf("\n==== PRACENJE NAVIKA ====\n");
+		printf("%d. Dodaj novu naviku (Create)\n", DODAJ_NAVIKU);
+		printf("%d. Prikazi sve navike (Read)\n", PRIKAZI_NAVIKE);
+		printf("%d. Azuriraj progres navike(Update)\n", AZURIRAJ_NAVIKU);
+		printf("%d. Obrisi naviku (Delete)\n", OBRISI_NAVIKU);
+		printf("%d. Sortiraj navike (qsort)\n", SORTIRAJ_NAVIKE);
+		printf("%d. Pretrazi naviku (bsearch)\n", PRETRAZI_NAVIKU);
+		printf("%d. Izlaz\n", IZLAZ);
+		printf("Vas izbor: ");
+		scanf("%d", &unos);
+
+		izbor = (IzbornikOpcije)unos; // Castanje unosa u enum
+
+		switch (izbor) {
+			case DODAJ_NAVIKU: {
+				int sljedeci_id = broj_trenutnih_navika + 1;
+				Navika privremena = kreirajNaviku(sljedeci_id);
+				umetniNaviku(&popis_navika, &broj_trenutnih_navika, privremena);
+				break;
+			}
+			case PRIKAZI_NAVIKE: prikaziNavike(popis_navika, broj_trenutnih_navika); break;
+			case AZURIRAJ_NAVIKU: azurirajNaviku(popis_navika, broj_trenutnih_navika); break;
+			case OBRISI_NAVIKU: obrisiNaviku(&popis_navika, &broj_trenutnih_navika); break;
+			case SORTIRAJ_NAVIKE: sortirajNavike(popis_navika, broj_trenutnih_navika); break;
+			case PRETRAZI_NAVIKU: pretraziNaviku(popis_navika, broj_trenutnih_navika); break;
+			case IZLAZ: printf("Izlaz iz programa.\n"); break;
+			default: printf("Nevazeci izbor, pokusajte ponovo.\n");
+		}
+		
+	}while (izbor != IZLAZ);
+
+	// Sigurno oslobađanje memorije prije gašenja programa (Točka 18)
+
+	if (popis_navika != NULL) {
+		free(popis_navika);
+		popis_navika = NULL;
+	}
+
+	return 0;
+
+
+}
