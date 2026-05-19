@@ -1,55 +1,50 @@
 #ifndef NAVIKE_H
 #define NAVIKE_H
 
+// [Pravilo 11] Kod izbornika koristiti enum tipove ili makro simbole
 #define MAX_NAZIV 50
-#define DATOTEKA_NAZIV "navike.dat"
+#define DATOTEKA_TXT "navike.txt"
+#define DATOTEKA_BIN "navike.bin"
 
-// Makro funkcija za provjeru uspješnosti alokacije (Točka 9)
-#define PROVJERA_ALOKACIJE(ptr) \
-do { \
-	if ((ptr) == NULL) { \
-	perror("Greska kod alokacije memorije"); \
-	exit(1); \
-	} \
-} while(0)
+// [Pravilo 8] Primjena extern ključne riječi za globalne varijable
+extern int g_ukupnoOperacija;
 
-// Enum za stavke izbornika (Točka 11)
-typedef enum {
-	IZLAZ = 0,
-	DODAJ_NAVIKU,
-	PRIKAZI_NAVIKE,
-	AZURIRAJ_NAVIKU,
-	OBRISI_NAVIKU,
-	SORTIRAJ_NAVIKE,
-	PRETRAZI_NAVIKU
-} IzbornikOpcije;
+// [Pravilo 3] Odabir konkretnih složenih tipova podataka za rad sa specifičnim objektima
+// [Pravilo 4] Primjena typedef sa strukturama i unijama po potrebi
+typedef union {
+	int brojDana;
+	float satiUlozeno; // [Pravilo 2] Primitivni tipovi s cjelobrojnim i realnim konstantama
+} ProgresPodatak;
 
-// Struktura podataka (Točka 3, 4)
 typedef struct {
 	int id;
 	char naziv[MAX_NAZIV];
-	int tjedni_cilj;
-	int odradeno;
+	int ponavljanja;
+	ProgresPodatak progres; // Integrirana unija unutar strukture
 } Navika;
 
-// Globalna varijabla deklarirana kao extern (Točka 8)
-extern const char* program_verzija;
+// [Pravilo 13] Generalna upotreba struktura i funkcija
+// [Pravilo 14] Zaštita parametara kod svih funkcija (korištenje const gdje se podaci ne mijenjaju)
+// [Pravilo 12] Generalna upotreba pokazivača tamo gdje su potrebni
 
-// Prototipi funkcija s const zaštitom parametara (Točka 13, 14)
-Navika kreirajNaviku(int novi_id);
-void umetniNaviku(Navika** navike, int* broj_navika, Navika nova);
-void prikaziNavike(const Navika* navike, int broj_navika);
-void azurirajNaviku(Navika* navike, int broj_navika);
-void obrisiNaviku(Navika** navike, int* broj_navika);
+void kreirajNaviku(Navika** niz, int* brojac, int* kapacitet); // CREATE
+void prikaziNavike(const Navika* const niz, const int brojac); // READ
+void azurirajNaviku(Navika* const niz, const int brojac); // UPDATE
+void obrisiNaviku(Navika* niz, int* brojac); // DELETE
 
-// Funkcije za sortiranje, pretraživanje i datoteke
-void sortirajNavike(Navika* navike, int broj_navika);
-void pretraziNaviku(const Navika* navike, int broj_navika);
-void spremiUDatoteku(const Navika* navike, int broj_navika);
-Navika* ucitajIzDatoteke(int* broj_navika);
+// Funkcije za datoteke, sortiranje i pretraživanje
+void spremiUdatoteku(const Navika* const niz, const int brojac);
+void ucitajIzDatoteke(Navika** niz, int* brojac, int* kapacitet);
+void sortirajNavike(Navika* const niz, const int brojac);
+void pretraziNaviku(const Navika* const niz, const int brojac);
+void pokreniKopiranjeDatoteke(void);
 
-// Callback funkcije za qsort i bsearch (Točka 26)
-int usporediPoId(const void* a, const void* b);
+// [Pravilo 25] Rekurzije - rekurzivni algoritam quicksort
+void rekurzivniQuickSort(Navika* niz, int niski, int visoki);
 
+// [Pravilo 9] Ako su funkcije jednostavne koristiti makro funkcije ili inline funkcije
+static inline void ispisPozdrava(void) {
+	printf("\nHvala sto koristite Tracker Navika!\n");
+}
 
 #endif
