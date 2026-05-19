@@ -4,57 +4,90 @@
 #include <stdlib.h>
 #include "navike.h"
 
-int main(){
-	// Static lokalna varijabla (Točka 6)
-	static int brojac_pokretanja_sustava = 1;
+//[Pravilo 7] Organizacija izvornog koda kroz jasnu strukturu main funkcije
+//[Pravilo 10] Izbornik / podizbornici
 
-	int broj_trenutnih_navika = 0;
-	// Dinamički pokazivač umjesto statičkog niza (Točka 15, 16)
-	Navika* popis_navika = ucitajIzDatoteke(&broj_trenutnih_navika);
+int main(void) {
+	int pocetniKapacitet = 2;
+	//Dinamicki alociran niz na samom pocetku
 
-	int unos;
-	IzbornikOpcije izbor; //Korištenje enum tipa (Točka 11)
+	Navika* popisNavika = (Navika*)malloc(pocetniKapacitet * sizeof(Navika));
+	int brojNavika = 0;
 
-	do {
-		printf("\n==== PRACENJE NAVIKA ====\n");
-		printf("%d. Dodaj novu naviku (Create)\n", DODAJ_NAVIKU);
-		printf("%d. Prikazi sve navike (Read)\n", PRIKAZI_NAVIKE);
-		printf("%d. Azuriraj progres navike(Update)\n", AZURIRAJ_NAVIKU);
-		printf("%d. Obrisi naviku (Delete)\n", OBRISI_NAVIKU);
-		printf("%d. Sortiraj navike (qsort)\n", SORTIRAJ_NAVIKE);
-		printf("%d. Pretrazi naviku (bsearch)\n", PRETRAZI_NAVIKU);
-		printf("%d. Izlaz\n", IZLAZ);
-		printf("Vas izbor: ");
-		scanf("%d", &unos);
-
-		izbor = (IzbornikOpcije)unos; // Castanje unosa u enum
-
-		switch (izbor) {
-			case DODAJ_NAVIKU: {
-				int sljedeci_id = broj_trenutnih_navika + 1;
-				Navika privremena = kreirajNaviku(sljedeci_id);
-				umetniNaviku(&popis_navika, &broj_trenutnih_navika, privremena);
-				break;
-			}
-			case PRIKAZI_NAVIKE: prikaziNavike(popis_navika, broj_trenutnih_navika); break;
-			case AZURIRAJ_NAVIKU: azurirajNaviku(popis_navika, broj_trenutnih_navika); break;
-			case OBRISI_NAVIKU: obrisiNaviku(&popis_navika, &broj_trenutnih_navika); break;
-			case SORTIRAJ_NAVIKE: sortirajNavike(popis_navika, broj_trenutnih_navika); break;
-			case PRETRAZI_NAVIKU: pretraziNaviku(popis_navika, broj_trenutnih_navika); break;
-			case IZLAZ: printf("Izlaz iz programa.\n"); break;
-			default: printf("Nevazeci izbor, pokusajte ponovo.\n");
-		}
-		
-	}while (izbor != IZLAZ);
-
-	// Sigurno oslobađanje memorije prije gašenja programa (Točka 18)
-
-	if (popis_navika != NULL) {
-		free(popis_navika);
-		popis_navika = NULL;
+	if (popisNavika == NULL) {
+		perror("Nemoguce alocirati pocetnu memoriju");
+		return 1;
 	}
 
+	//Ucitavanje postojecih podataka na startu aplikacije
+	ucitajIzDatoteke(&popisNavika, &brojNavika, &pocetniKapacitet);
+
+	int izbor;
+	do {
+		printf("\n==== TRACKER NAVIKA ====\n");
+		printf("1. Dodaj novu naviku\n");
+		printf("2. Prikazi sve navike\n");
+		printf("3. Azuriraj postojecu naviku\n");
+		printf("4. Obrisi naviku\n");
+		printf("5. Sortiraj navike abecedno\n");
+		printf("6. Sortiraj navike po ID-ju\n");
+		printf("7.Pretrazi naviku po nazivu\n");
+		printf("8. Spremi trenutno stanje u datoteke\n");
+		printf("9. Kopiraj tekstualnu datoteku\n");
+		printf("10. Izlaz iz aplikacije\n");
+		printf("------------------------------\n");
+		printf("Ukupno izvrsenih operacija: %d\n", g_ukupnoOperacija);
+		printf("Izbor: ");
+	
+		if (scanf("%d", &izbor) != 1) {
+			printf("Nevazeci unos. Prekid.\n");
+			break;
+		}
+
+		switch (izbor) {
+			case 1:
+				kreirajNaviku(&popisNavika, &brojNavika, &pocetniKapacitet);
+				break;
+			case 2:
+				prikaziNavike(popisNavika, brojNavika);
+				break;
+			case 3:
+				azurirajNaviku(popisNavika, brojNavika);
+				break;
+			case 4:
+				obrisiNaviku(popisNavika, &brojNavika);
+				break;
+			case 5:
+				sortirajNavike(popisNavika, brojNavika);
+				break;
+			case 6:
+				rekurzivniQuickSort(popisNavika, 0, brojNavika - 1);
+				printf("Niz je sortiran rekurzuivnim QuickSort algoritmom po ID-ju.\n");
+				break;
+			case 7:
+				pretraziNaviku(popisNavika, brojNavika);
+				break;
+			case 8:
+				spremiUdatoteku(popisNavika, brojNavika);
+				break;
+			case 9:
+				pokreniKopiranjeDatoteke();
+				break;
+			case 10:
+				//Poziv inline funkcije na kraju
+				ispisPozdrava();
+				break;
+			default:
+				printf("Pogresan izbor, pokusajte ponovo.\n");
+		}
+
+	} while (izbor != 10);
+
+	//[Pravilo 18] Eksterni poziv funkcije za potpuno ciscenje memorije prije samog izlaza
+
+	extern void sigurnoObrisi(void** pokazivac);
+	sigurnoObrisi((void**)&popisNavika);
+
 	return 0;
-
-
+	
 }
