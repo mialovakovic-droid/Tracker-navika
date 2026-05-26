@@ -28,19 +28,19 @@ void kreirajNaviku(Navika** niz, int* brojac, int* kapacitet) {
 	s_lokalniBrojacPoziva++;
 	g_ukupnoOperacija++;
 
-	
-		// [Pravilo 16] Koristiti dinamičko zauzimanje memorije osobito za složene tipove podataka
-		if (*brojac >= *kapacitet) {
-			*kapacitet *= 2;
-			// [Pravilo 17] Koristiti funkcije malloc(), calloc(), realloc(), free()
-			Navika* privremeni = (Navika*)realloc(*niz, *kapacitet * sizeof(Navika));
-			if (privremeni == NULL) {
-				// [Pravilo 22] Upravljanje pogreškama pomoću perror
-				perror("Greska prilikom realokacije memorije");
-				return;
-			}
-			*niz = privremeni;
+
+	// [Pravilo 16] Koristiti dinamičko zauzimanje memorije osobito za složene tipove podataka
+	if (*brojac >= *kapacitet) {
+		*kapacitet *= 2;
+		// [Pravilo 17] Koristiti funkcije malloc(), calloc(), realloc(), free()
+		Navika* privremeni = (Navika*)realloc(*niz, *kapacitet * sizeof(Navika));
+		if (privremeni == NULL) {
+			// [Pravilo 22] Upravljanje pogreškama pomoću perror
+			perror("Greska prilikom realokacije memorije");
+			return;
 		}
+		*niz = privremeni;
+	}
 
 	printf("\n--- Nova Navika (Create) ---\n");
 	(*niz)[*brojac].id = *brojac + 1;
@@ -98,7 +98,7 @@ void azurirajNaviku(Navika* const niz, const int brojac) {
 
 
 // DELETE - Brisanje navike
-void obrisiNaviku(Navika * niz, int* brojac) {
+void obrisiNaviku(Navika* niz, int* brojac) {
 	g_ukupnoOperacija++;
 	int trazeniId;
 	printf("\n--- Obrisi Naviku (Delete) ---\n");
@@ -111,7 +111,8 @@ void obrisiNaviku(Navika * niz, int* brojac) {
 				niz[j] = niz[j + 1];
 			}
 			(*brojac)--;
-			printf("Navika uspjesno uklonjena iz niza!\n");
+			
+			spremiUdatoteku(niz, *brojac);
 			return;
 		}
 	}
@@ -134,9 +135,9 @@ void spremiUdatoteku(const Navika* const niz, const int brojac) {
 		fprintf(fTxt, "ID:%d, Naziv navike:%s , Broj Ponavljanja: %d, Progres u danu: %d\n", niz[i].id, niz[i].naziv, niz[i].ponavljanja, niz[i].progres.brojDana);
 	}
 
-	
-		// Pisanje cijelog bloka u binarnu datoteku
-		fwrite(niz, sizeof(Navika), brojac, fBin);
+
+	// Pisanje cijelog bloka u binarnu datoteku
+	fwrite(niz, sizeof(Navika), brojac, fBin);
 
 	fclose(fTxt);
 	fclose(fBin);
@@ -168,9 +169,9 @@ void ucitajIzDatoteke(Navika** niz, int* brojac, int* kapacitet) {
 		*niz = privremeni;
 	}
 
-	
-		// [Pravilo 22] Korištenje feof() ili ferror() za provjeru stanja datoteke
-		fread(*niz, sizeof(Navika), brojZapisa, fBin);
+
+	// [Pravilo 22] Korištenje feof() ili ferror() za provjeru stanja datoteke
+	fread(*niz, sizeof(Navika), brojZapisa, fBin);
 	if (ferror(fBin)) {
 		printf("Dogodila se pogreska pri citanju binarne datoteke.\n");
 	}
@@ -199,9 +200,9 @@ void pokreniKopiranjeDatoteke(void) {
 	fclose(izvor);
 	fclose(odrediste);
 
-	
-		// Demonstracija remove i rename pravila
-		remove("navike_stara_kopija.txt");
+
+	// Demonstracija remove i rename pravila
+	remove("navike_stara_kopija.txt");
 	rename("navike_kopija.txt", "navike_stara_kopija.txt");
 	printf("Kopiranje i preimenovanje datoteka izvrseno.\n");
 }
