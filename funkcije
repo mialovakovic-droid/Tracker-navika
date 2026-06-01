@@ -2,20 +2,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>  // [Pravilo 22] Koristiti errno, perror...
+#include <errno.h>  
 #include "navike.h"
 
 
-// [Pravilo 6] Primjena ključne riječi static za globalne i lokalne varijable
+
 static int s_lokalniBrojacPoziva = 0;
 
-// Implementacija extern varijable iz zaglavlja
+
 int g_ukupnoOperacija = 0;
 
-// [Pravilo 5] Imenovanje identifikatora: camelCase (npr. rekurzivniQuickSort), PascalCase (npr. Navika), snake_case (npr. s_lokalniBrojacPoziva)
 
-// Pomocna funkcija za sigurno oslobadanje memorije
-// [Pravilo 18] Sigurno brisanje memorije, provjera pokazivaca, double free, anuliranje
 void sigurnoObrisi(void** pokazivac) {
 	if (pokazivac != NULL && *pokazivac != NULL) {
 		free(*pokazivac);
@@ -23,16 +20,15 @@ void sigurnoObrisi(void** pokazivac) {
 	}
 }
 
-// CREATE - Dodavanje nove navike s dinamičkom realokacijom
+
 void kreirajNaviku(Navika** niz, int* brojac, int* kapacitet) {
 	s_lokalniBrojacPoziva++;
 	g_ukupnoOperacija++;
 
 
-	// [Pravilo 16] Koristiti dinamičko zauzimanje memorije osobito za složene tipove podataka
+	
 	if (*brojac >= *kapacitet) {
 		*kapacitet *= 2;
-		// [Pravilo 17] Koristiti funkcije malloc(), calloc(), realloc(), free()
 		Navika* privremeni = (Navika*)realloc(*niz, *kapacitet * sizeof(Navika));
 		if (privremeni == NULL) {
 			// [Pravilo 22] Upravljanje pogreškama pomoću perror
@@ -59,7 +55,7 @@ void kreirajNaviku(Navika** niz, int* brojac, int* kapacitet) {
 }
 
 
-// READ - Prikaz navika
+
 void prikaziNavike(const Navika* const niz, const int brojac) {
 	g_ukupnoOperacija++;
 	printf("\n--- Popis Navika (Read) ---\n");
@@ -67,7 +63,7 @@ void prikaziNavike(const Navika* const niz, const int brojac) {
 		printf("Nema dostupnih navika.\n");
 		return;
 	}
-	// [Pravilo 15] Koristiti statički zauzeta polja gdje su potrebna (lokalni string za ispis)
+	
 	char formatiraniIspis[100];
 
 	for (int i = 0; i < brojac; i++) {
@@ -77,7 +73,7 @@ void prikaziNavike(const Navika* const niz, const int brojac) {
 	}
 }
 
-// UPDATE - Izmjena podataka navike
+
 void azurirajNaviku(Navika* const niz, const int brojac) {
 	g_ukupnoOperacija++;
 	int trazeniId;
@@ -97,7 +93,7 @@ void azurirajNaviku(Navika* const niz, const int brojac) {
 }
 
 
-// DELETE - Brisanje navike
+
 void obrisiNaviku(Navika* niz, int* brojac) {
 	g_ukupnoOperacija++;
 	int trazeniId;
@@ -119,7 +115,7 @@ void obrisiNaviku(Navika* niz, int* brojac) {
 	printf("Navika s tim ID-jem nije pronadena.\n");
 }
 
-// [Pravilo 19] Datoteke, koristiti tekstualnu ili binarnu, provjera pokazivaca i zatvaranje datoteke
+
 void spremiUdatoteku(const Navika* const niz, const int brojac) {
 	FILE* fTxt = fopen(DATOTEKA_TXT, "w");
 	FILE* fBin = fopen(DATOTEKA_BIN, "wb");
@@ -136,7 +132,7 @@ void spremiUdatoteku(const Navika* const niz, const int brojac) {
 	}
 
 
-	// Pisanje cijelog bloka u binarnu datoteku
+	
 	fwrite(niz, sizeof(Navika), brojac, fBin);
 
 	fclose(fTxt);
@@ -147,11 +143,11 @@ void spremiUdatoteku(const Navika* const niz, const int brojac) {
 void ucitajIzDatoteke(Navika** niz, int* brojac, int* kapacitet) {
 	FILE* fBin = fopen(DATOTEKA_BIN, "rb");
 	if (fBin == NULL) {
-		// Ako binarna ne postoji, sustav radi s praznim nizom
+		
 		return;
 	}
 
-	// [Pravilo 20] Koristiti funkcije fseek(), ftell(), rewind()
+	
 	fseek(fBin, 0, SEEK_END);
 	long velicinaDatoteke = ftell(fBin);
 	rewind(fBin);
@@ -170,7 +166,7 @@ void ucitajIzDatoteke(Navika** niz, int* brojac, int* kapacitet) {
 	}
 
 
-	// [Pravilo 22] Korištenje feof() ili ferror() za provjeru stanja datoteke
+	
 	fread(*niz, sizeof(Navika), brojZapisa, fBin);
 	if (ferror(fBin)) {
 		printf("Dogodila se pogreska pri citanju binarne datoteke.\n");
@@ -181,7 +177,7 @@ void ucitajIzDatoteke(Navika** niz, int* brojac, int* kapacitet) {
 	printf("Uspjesno ucitano %d navika iz binarne datoteke.\n", *brojac);
 }
 
-// [Pravilo 21] Koristiti funkcije remove(), rename(), implementirati funkciju za kopiranje datoteke
+
 void pokreniKopiranjeDatoteke(void) {
 	FILE* izvor = fopen(DATOTEKA_TXT, "r");
 	FILE* odrediste = fopen("navike_kopija.txt", "w");
@@ -201,13 +197,13 @@ void pokreniKopiranjeDatoteke(void) {
 	fclose(odrediste);
 
 
-	// Demonstracija remove i rename pravila
+	
 	remove("navike_stara_kopija.txt");
 	rename("navike_kopija.txt", "navike_stara_kopija.txt");
 	printf("Kopiranje i preimenovanje datoteka izvrseno.\n");
 }
 
-// [Pravilo 25] Rekurzivni algoritam (QuickSort) pomocna logika
+
 void rekurzivniQuickSort(Navika* niz, int niski, int visoki) {
 	if (niski < visoki) {
 		int pivot = niz[visoki].id;
@@ -233,20 +229,18 @@ void rekurzivniQuickSort(Navika* niz, int niski, int visoki) {
 }
 
 
-// [Pravilo 23] Sortiranje - qsort ugrađena funkcija
-// [Pravilo 26] Pokazivači na funkcije - qsort funkcija usporedbe
+
 int usporediPoNazivu(const void* a, const void* b) {
 	return strcmp(((Navika*)a)->naziv, ((Navika*)b)->naziv);
 }
 
 void sortirajNavike(Navika* const niz, const int brojac) {
 	if (brojac < 2) return;
-	// Poziv qsort-a koji interno koristi pokazivač na funkciju usporediPoNazivu
 	qsort(niz, brojac, sizeof(Navika), usporediPoNazivu);
 	printf("Navike sortirane abecedno po nazivu putem qsort funkcije.\n");
 }
 
-// [Pravilo 24] Pretraživanje - bsearch ugrađena funkcija
+
 int usporediZaPretragu(const void* kljuc, const void* element) {
 	return strcmp((char*)kljuc, ((Navika*)element)->naziv);
 }
@@ -256,7 +250,7 @@ void pretraziNaviku(const Navika* const niz, const int brojac) {
 	printf("Unesite tocan naziv navike za pretragu: ");
 	scanf(" %[^\n]", trazeniNaziv);
 
-	// bsearch zahtijeva sortirani niz
+	
 	Navika* pronadeno = (Navika*)bsearch(trazeniNaziv, niz, brojac, sizeof(Navika), usporediZaPretragu);
 
 	if (pronadeno != NULL) {
