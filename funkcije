@@ -31,7 +31,6 @@ void kreirajNaviku(Navika** niz, int* brojac, int* kapacitet) {
 		*kapacitet *= 2;
 		Navika* privremeni = (Navika*)realloc(*niz, *kapacitet * sizeof(Navika));
 		if (privremeni == NULL) {
-			// [Pravilo 22] Upravljanje pogreškama pomoću perror
 			perror("Greska prilikom realokacije memorije");
 			return;
 		}
