@@ -73,7 +73,6 @@ int main(void) {
 				pokreniKopiranjeDatoteke();
 				break;
 			case 10:
-				//Poziv inline funkcije na kraju
 				ispisPozdrava();
 				break;
 			default:
