@@ -12,14 +12,14 @@ extern int g_ukupnoOperacija;
 
 typedef union {
 	int brojDana;
-	float satiUlozeno; // [Pravilo 2] Primitivni tipovi s cjelobrojnim i realnim konstantama
+	float satiUlozeno; 
 } ProgresPodatak;
 
 typedef struct {
 	int id;
 	char naziv[MAX_NAZIV];
 	int ponavljanja;
-	ProgresPodatak progres; // Integrirana unija unutar strukture
+	ProgresPodatak progres; 
 } Navika;
 
 
@@ -39,7 +39,7 @@ void pokreniKopiranjeDatoteke(void);
 
 void rekurzivniQuickSort(Navika* niz, int niski, int visoki);
 
-// [Pravilo 9] Ako su funkcije jednostavne koristiti makro funkcije ili inline funkcije
+
 static inline void ispisPozdrava(void) {
 	printf("\nHvala sto koristite Tracker Navika!\n");
 }
